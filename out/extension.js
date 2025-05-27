@@ -30,44 +30,17 @@ const pug = __importStar(require("pug"));
 const vscode = __importStar(require("vscode"));
 function activate(context) {
     // 注册编译命令
-    let compileDisposable = vscode.commands.registerCommand('pug-format.compile', () => {
+    let compileDisposable = vscode.commands.registerCommand('pug-compile.compile', () => {
         const editor = vscode.window.activeTextEditor;
         if (editor) {
             compilePugFile(editor.document.uri.fsPath);
         }
     });
-    // 注册格式化命令
-    let formatDisposable = vscode.commands.registerCommand('pug-format.format', () => {
-        const editor = vscode.window.activeTextEditor;
-        if (editor && (editor.document.languageId === 'pug' || editor.document.languageId === 'Pug')) {
-            const config = vscode.workspace.getConfiguration('pug-format');
-            const indentSize = config.get('indentSize') || 2;
-            editor.edit(editBuilder => {
-                const document = editor.document;
-                const formattedContent = normalizeIndent(document.getText(), indentSize);
-                editBuilder.replace(new vscode.Range(document.positionAt(0), document.positionAt(document.getText().length)), formattedContent);
-            }).then(success => {
-                if (success) {
-                    vscode.window.showInformationMessage('Pug格式已修正');
-                }
-            });
-        }
-    });
-    // 注册格式化提供程序
-    let formattingProvider = vscode.languages.registerDocumentFormattingEditProvider(['pug', 'Pug'], {
-        provideDocumentFormattingEdits(document) {
-            const config = vscode.workspace.getConfiguration('pug-format');
-            const indentSize = config.get('indentSize') || 2;
-            const formatted = normalizeIndent(document.getText(), indentSize);
-            const range = new vscode.Range(document.positionAt(0), document.positionAt(document.getText().length));
-            return [vscode.TextEdit.replace(range, formatted)];
-        }
-    });
-    context.subscriptions.push(compileDisposable, formatDisposable, formattingProvider);
+    context.subscriptions.push(compileDisposable);
     // 监听文件保存事件
     vscode.workspace.onDidSaveTextDocument((document) => {
-        if (document.languageId === 'pug' || document.languageId === 'Pug') {
-            const config = vscode.workspace.getConfiguration('pug-format');
+        if (document.languageId === 'pug') {
+            const config = vscode.workspace.getConfiguration('pug-compile');
             if (config.get('autoCompile')) {
                 compilePugFile(document.uri.fsPath);
             }
@@ -75,67 +48,9 @@ function activate(context) {
     }, null, context.subscriptions);
 }
 exports.activate = activate;
-/*缩进修正函数*/
-function normalizeIndent(content, indentSize) {
-    var _a;
-    const lines = content.split('\n');
-    const config = vscode.workspace.getConfiguration('pug-format');
-    const fixIndent = (_a = config.get('fixIndent')) !== null && _a !== void 0 ? _a : true;
-    if (!fixIndent) {
-        return content;
-    }
-    // 用于存储每行的信息
-    const lineInfo = lines.map(line => {
-        var _a, _b;
-        return ({
-            content: line,
-            indent: ((_b = (_a = line.match(/^\s*/)) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.length) || 0,
-            // 忽略空行和注释行
-            isContent: !(/^\s*$/.test(line) || /^\s*\/\//.test(line) || /^\s*-\s*\/\//.test(line))
-        });
-    });
-    // 修正缩进
-    for (let i = 1; i < lineInfo.length; i++) {
-        const current = lineInfo[i];
-        if (!current.isContent)
-            continue; // 跳过空行和注释行
-        // 查找上一个有效内容行
-        let prevIndex = i - 1;
-        while (prevIndex >= 0 && !lineInfo[prevIndex].isContent) {
-            prevIndex--;
-        }
-        if (prevIndex >= 0) {
-            const prev = lineInfo[prevIndex];
-            const prevIndent = prev.indent;
-            const currentIndent = current.indent;
-            // 检查是否需要增加缩进
-            if (currentIndent <= prevIndent &&
-                // 检查当前行是否应该是子元素（通过检查前一行是否以冒号结尾或包含管道符号）
-                (prev.content.trim().endsWith(':') || prev.content.includes('|'))) {
-                // 子元素应该比父元素多一个缩进级别
-                const expectedIndent = prevIndent + indentSize;
-                const missingSpaces = expectedIndent - currentIndent;
-                if (missingSpaces > 0) {
-                    lines[i] = ' '.repeat(missingSpaces) + lines[i];
-                }
-            }
-            // 检查是否是兄弟元素
-            else if (currentIndent < prevIndent &&
-                !prev.content.trim().endsWith(':') &&
-                !prev.content.includes('|')) {
-                // 兄弟元素应该有相同的缩进
-                const missingSpaces = prevIndent - currentIndent;
-                if (missingSpaces > 0) {
-                    lines[i] = ' '.repeat(missingSpaces) + lines[i];
-                }
-            }
-        }
-    }
-    return lines.join('\n');
-}
 function compilePugFile(filePath) {
     try {
-        const config = vscode.workspace.getConfiguration('pug-format');
+        const config = vscode.workspace.getConfiguration('pug-compile');
         let outputPath = config.get('outputPath') || '';
         const outputPathFormat = config.get('outputPathFormat') || 'same';
         const pretty = config.get('pretty') || false;

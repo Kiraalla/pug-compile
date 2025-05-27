@@ -4,6 +4,7 @@
   "description": "VSCode扩展，用于将Pug文件编译为HTML",
   "version": "0.0.1",
   "publisher": "Kiraalla",
+  "icon": "./logo.png",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -18,9 +19,6 @@
   "categories": [
     "Programming Languages"
   ],
-  "activationEvents": [
-    "onLanguage:pug"
-  ],
   "main": "./out/extension.js",
   "contributes": {
     "languages": [
@@ -33,26 +31,38 @@
         "extensions": [
           ".pug",
           ".jade"
-        ]
+        ],
+        "configuration": "./syntaxes/pug.language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "pug",
+        "scopeName": "text.jade.wxml",
+        "path": "./syntaxes/pug.tmLanguage.json"
       }
     ],
     "commands": [
       {
         "command": "pug-compile.compile",
-        "title": "Pug Compile：将Pug编译为HTML"
+        "title": "Pug Compile：将Pug编译为HTML",
+        "icon": {
+          "light": "./icon.png",
+          "dark": "./icon.png"
+        }
       }
     ],
     "menus": {
       "editor/title": [
         {
-          "when": "editorLangId == pug || editorLangId == Pug",
+          "when": "editorLangId == pug",
           "command": "pug-compile.compile",
           "group": "navigation"
         }
       ],
       "editor/context": [
         {
-          "when": "editorLangId == pug || editorLangId == Pug",
+          "when": "editorLangId == pug",
           "command": "pug-compile.compile",
           "group": "1_modification"
         }
@@ -60,7 +70,7 @@
       "commandPalette": [
         {
           "command": "pug-compile.compile",
-          "when": "editorLangId == pug || editorLangId == Pug"
+          "when": "editorLangId == pug"
         }
       ]
     },
@@ -82,7 +92,6 @@
           ],
           "description": "输出路径格式：same(相同目录)|custom(自定义目录)|relative(保持相对路径)"
         },
-
         "pug-compile.pretty": {
           "type": "boolean",
           "default": true,

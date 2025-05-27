@@ -1,0 +1,10 @@
+# VS Code扩展开发常见忽略规则
+.vscode-test/**
+out/test/**
+*.vsix
+node_modules/**
+.DS_Store
+*.log
+*.tmp
+*.bak
+*.swp

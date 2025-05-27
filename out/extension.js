@@ -39,7 +39,7 @@ function activate(context) {
     // 注册格式化命令
     let formatDisposable = vscode.commands.registerCommand('pug-format.format', () => {
         const editor = vscode.window.activeTextEditor;
-        if (editor && editor.document.languageId === 'pug') {
+        if (editor && (editor.document.languageId === 'pug' || editor.document.languageId === 'Pug')) {
             const config = vscode.workspace.getConfiguration('pug-format');
             const indentSize = config.get('indentSize') || 2;
             editor.edit(editBuilder => {
@@ -54,7 +54,7 @@ function activate(context) {
         }
     });
     // 注册格式化提供程序
-    let formattingProvider = vscode.languages.registerDocumentFormattingEditProvider('pug', {
+    let formattingProvider = vscode.languages.registerDocumentFormattingEditProvider(['pug', 'Pug'], {
         provideDocumentFormattingEdits(document) {
             const config = vscode.workspace.getConfiguration('pug-format');
             const indentSize = config.get('indentSize') || 2;
@@ -66,7 +66,7 @@ function activate(context) {
     context.subscriptions.push(compileDisposable, formatDisposable, formattingProvider);
     // 监听文件保存事件
     vscode.workspace.onDidSaveTextDocument((document) => {
-        if (document.languageId === 'pug') {
+        if (document.languageId === 'pug' || document.languageId === 'Pug') {
             const config = vscode.workspace.getConfiguration('pug-format');
             if (config.get('autoCompile')) {
                 compilePugFile(document.uri.fsPath);

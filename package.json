@@ -1,0 +1,142 @@
+{
+  "name": "pug-format",
+  "displayName": "Pug Format",
+  "description": "VSCode扩展，用于将Pug文件编译为HTML",
+  "version": "0.0.1",
+  "publisher": "kira0522",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kira0522/pug-format.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kira0522/pug-format/issues"
+  },
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Formatters",
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:pug"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [{
+      "id": "pug",
+      "aliases": ["Pug", "pug"],
+      "extensions": [".pug", ".jade"]
+    }],
+    "commands": [
+      {
+        "command": "pug-format.compile",
+        "title": "Pug Format：将Pug编译为HTML"
+      },
+      {
+        "command": "pug-format.format",
+        "title": "Pug Format：格式化Pug文件"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "when": "editorLangId == pug",
+          "command": "pug-format.format",
+          "group": "navigation"
+        },
+        {
+          "when": "editorLangId == pug",
+          "command": "pug-format.compile",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "when": "editorLangId == pug",
+          "command": "pug-format.format",
+          "group": "1_modification"
+        },
+        {
+          "when": "editorLangId == pug",
+          "command": "pug-format.compile",
+          "group": "1_modification"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "pug-format.format",
+          "when": "editorLangId == pug"
+        },
+        {
+          "command": "pug-format.compile",
+          "when": "editorLangId == pug"
+        }
+      ]
+    },
+    "capabilities": {
+      "documentFormattingProvider": true
+    },
+    "configuration": {
+      "title": "Pug Format",
+      "properties": {
+        "pug-format.outputPath": {
+          "type": "string",
+          "default": "",
+          "description": "HTML输出路径（相对或绝对路径）"
+        },
+        "pug-format.outputPathFormat": {
+          "type": "string",
+          "default": "same",
+          "enum": [
+            "same",
+            "custom",
+            "relative"
+          ],
+          "description": "输出路径格式：same(相同目录)|custom(自定义目录)|relative(保持相对路径)"
+        },
+        "pug-format.indentSize": {
+          "type": "number",
+          "default": 2,
+          "description": "缩进空格数"
+        },
+        "pug-format.fixIndent": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否自动修正缩进"
+        },
+        "pug-format.pretty": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否格式化输出HTML"
+        },
+        "pug-format.autoCompile": {
+          "type": "boolean",
+          "default": true,
+          "description": "保存时自动编译Pug文件"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext .ts,.tsx",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7",
+    "@types/pug": "^2.0.10",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^5.16.0",
+    "@typescript-eslint/parser": "^5.16.0",
+    "eslint": "^8.9.0",
+    "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "pug": "^3.0.2"
+  }
+}

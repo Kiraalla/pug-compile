@@ -2,7 +2,7 @@
   "name": "pug-compile",
   "displayName": "Pug Compile",
   "description": "VSCode扩展，用于将Pug文件编译为HTML",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "Kiraalla",
   "icon": "./logo.png",
   "license": "MIT",
@@ -16,6 +16,10 @@
   "engines": {
     "vscode": "^1.74.0"
   },
+  "activationEvents": [
+    "workspaceContains:**/*.pug",
+    "workspaceContains:**/*.jade"
+  ],
   "categories": [
     "Programming Languages"
   ],

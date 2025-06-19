@@ -2,7 +2,7 @@
   "name": "pug-compile",
   "displayName": "Pug Compile",
   "description": "VSCode扩展，用于将Pug文件编译为HTML",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "Kiraalla",
   "icon": "./logo.png",
   "license": "MIT",
@@ -15,10 +15,9 @@
   },
   "engines": {
     "vscode": "^1.74.0"
-  },
-  "activationEvents": [
-    "workspaceContains:**/*.pug",
-    "workspaceContains:**/*.jade"
+  },  "activationEvents": [
+    "onLanguage:pug",
+    "onCommand:pug-compile.format"
   ],
   "categories": [
     "Programming Languages"
@@ -36,17 +35,9 @@
           ".pug",
           ".jade"
         ],
-        "configuration": "./syntaxes/pug.language-configuration.json"
+        "configuration": "./languages/lang.json"
       }
-    ],
-    "grammars": [
-      {
-        "language": "pug",
-        "scopeName": "text.jade.wxml",
-        "path": "./syntaxes/pug.tmLanguage.json"
-      }
-    ],
-    "commands": [
+    ],    "commands": [
       {
         "command": "pug-compile.compile",
         "title": "Pug Compile：将Pug编译为HTML",
@@ -54,6 +45,33 @@
           "light": "./icon.png",
           "dark": "./icon.png"
         }
+      },
+      {
+        "command": "pug-compile.format",
+        "title": "Pug：格式化文件",
+        "category": "Pug"
+      }
+    ],
+    "capabilities": {
+      "documentFormattingProvider": "true"
+    },
+    "grammars": [
+      {
+        "language": "pug",
+        "path": "./syntaxes/pug.tmLanguage.json",
+        "scopeName": "text.pug",
+        "embeddedLanguages": {
+          "text.html.basic": "html",
+          "source.js": "javascript",
+          "source.ts": "typescript"
+        }
+      }
+    ],    "keybindings": [
+      {
+        "command": "pug-compile.compile",
+        "key": "ctrl+alt+c",
+        "mac": "cmd+alt+c",
+        "when": "editorLangId == pug"
       }
     ],
     "menus": {
@@ -105,6 +123,31 @@
           "type": "boolean",
           "default": true,
           "description": "保存时自动编译Pug文件"
+        },        "pug-compile.format.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "启用Pug文件格式化"
+        },
+        "pug-compile.format.fillTab": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "default": null,
+          "description": "使用Tab缩进，如果为false则使用空格"
+        },
+        "pug-compile.format.omitDiv": {
+          "type": "boolean",
+          "default": false,
+          "description": "当标签有id或class时省略div标签"
+        },
+        "pug-compile.format.tabSize": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "default": 2,
+          "description": "当 fillTab 为 false 时，使用的空格数量"
         }
       }
     }
@@ -127,6 +170,7 @@
     "typescript": "^4.5.5"
   },
   "dependencies": {
-    "pug": "^3.0.2"
+    "pug": "^3.0.2",
+    "pug-beautify": "^0.1.1"
   }
 }

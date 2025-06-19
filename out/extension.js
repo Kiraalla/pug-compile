@@ -24,142 +24,55 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
-const fs = __importStar(require("fs"));
-const path = __importStar(require("path"));
-const pug = __importStar(require("pug"));
 const vscode = __importStar(require("vscode"));
+const compiler_1 = require("./modules/compiler");
+const formatter_1 = require("./modules/formatter");
+/**
+ * 扩展被激活时调用
+ */
 function activate(context) {
-    // 注册编译命令
-    let compileDisposable = vscode.commands.registerCommand('pug-compile.compile', () => {
-        const editor = vscode.window.activeTextEditor;
-        if (editor) {
-            compilePugFile(editor.document.uri.fsPath);
+    const formatter = new formatter_1.PugFormatter();
+    // 注册格式化命令
+    const formatDisposable = vscode.commands.registerCommand('pug-compile.format', () => {
+        const activeTextEditor = vscode.window.activeTextEditor;
+        if (!activeTextEditor || activeTextEditor.document.languageId !== 'pug') {
+            return;
+        }
+        const document = activeTextEditor.document;
+        const edits = formatter.formatDocument(document, activeTextEditor);
+        const edit = new vscode.WorkspaceEdit();
+        edit.replace(document.uri, edits[0].range, edits[0].newText);
+        return vscode.workspace.applyEdit(edit);
+    });
+    // 注册格式化提供程序
+    const formatterProvider = vscode.languages.registerDocumentFormattingEditProvider({ scheme: 'file', language: 'pug' }, {
+        provideDocumentFormattingEdits: (document) => {
+            return formatter.formatDocument(document, vscode.window.activeTextEditor);
         }
     });
-    context.subscriptions.push(compileDisposable);
-    // 监听文件保存事件
-    vscode.workspace.onDidSaveTextDocument((document) => {
+    // 注册编译命令
+    const compileDisposable = vscode.commands.registerCommand('pug-compile.compile', () => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            compiler_1.PugCompiler.compile(editor.document.uri.fsPath);
+        }
+    });
+    // 监听文件保存事件，用于自动编译
+    const saveDisposable = vscode.workspace.onDidSaveTextDocument((document) => {
         if (document.languageId === 'pug') {
             const config = vscode.workspace.getConfiguration('pug-compile');
             if (config.get('autoCompile')) {
-                compilePugFile(document.uri.fsPath);
+                compiler_1.PugCompiler.compile(document.uri.fsPath);
             }
         }
-    }, null, context.subscriptions);
+    });
+    // 注册到订阅列表以便正确清理
+    context.subscriptions.push(formatDisposable, formatterProvider, compileDisposable, saveDisposable);
 }
 exports.activate = activate;
-function compilePugFile(filePath) {
-    try {
-        const config = vscode.workspace.getConfiguration('pug-compile');
-        let outputPath = config.get('outputPath') || '';
-        const outputPathFormat = config.get('outputPathFormat') || 'same';
-        const pretty = config.get('pretty') || false;
-        // 读取Pug文件内容
-        const pugContent = fs.readFileSync(filePath, 'utf8');
-        // 编译Pug为HTML
-        const html = pug.compile(pugContent, {
-            filename: filePath,
-            pretty: pretty
-        })();
-        // 生成输出文件路径
-        let finalOutputPath = '';
-        const fileExtension = path.extname(filePath);
-        const fileNameWithoutExt = path.basename(filePath, fileExtension);
-        switch (outputPathFormat) {
-            case 'same':
-                // 默认行为：输出到相同目录
-                finalOutputPath = filePath.replace(/\.pug$/, '.html');
-                break;
-            case 'custom':
-                // 自定义输出目录
-                if (outputPath) {
-                    let targetOutputPath;
-                    if (path.isAbsolute(outputPath)) {
-                        // 如果是绝对路径，直接使用
-                        targetOutputPath = outputPath;
-                    }
-                    else {
-                        // 如果是相对路径，基于当前文件所在目录
-                        targetOutputPath = path.join(path.dirname(filePath), outputPath);
-                    }
-                    // 确保输出目录存在
-                    if (!fs.existsSync(targetOutputPath)) {
-                        fs.mkdirSync(targetOutputPath, { recursive: true });
-                    }
-                    finalOutputPath = path.join(targetOutputPath, `${fileNameWithoutExt}.html`);
-                }
-                else {
-                    // 如果未设置输出路径，回退到默认行为
-                    finalOutputPath = filePath.replace(/\.pug$/, '.html');
-                }
-                break;
-            case 'relative':
-                // 保持相对路径结构但使用不同的根目录
-                if (outputPath) {
-                    let targetOutputPath;
-                    if (path.isAbsolute(outputPath)) {
-                        // 如果是绝对路径，直接使用
-                        targetOutputPath = outputPath;
-                    }
-                    else {
-                        // 处理以/开头的相对路径
-                        if (outputPath.startsWith('/')) {
-                            outputPath = outputPath.substring(1);
-                        }
-                        // 基于工作区根目录
-                        const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(filePath));
-                        if (workspaceFolder) {
-                            targetOutputPath = path.join(workspaceFolder.uri.fsPath, outputPath);
-                            // 确保输出目录存在
-                            if (!fs.existsSync(targetOutputPath)) {
-                                fs.mkdirSync(targetOutputPath, { recursive: true });
-                            }
-                        }
-                        else {
-                            // 如果无法确定工作区，回退到默认行为
-                            return filePath.replace(/\.pug$/, '.html');
-                        }
-                    }
-                    // 获取工作区文件夹
-                    const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(filePath));
-                    if (workspaceFolder) {
-                        // 计算文件相对于工作区的路径
-                        const relativePath = path.relative(workspaceFolder.uri.fsPath, path.dirname(filePath));
-                        // 组合新的输出路径
-                        const newOutputDir = path.join(targetOutputPath, relativePath);
-                        // 确保输出目录存在
-                        if (!fs.existsSync(newOutputDir)) {
-                            fs.mkdirSync(newOutputDir, { recursive: true });
-                        }
-                        finalOutputPath = path.join(newOutputDir, `${fileNameWithoutExt}.html`);
-                    }
-                    else {
-                        // 如果无法确定工作区，回退到默认行为
-                        finalOutputPath = filePath.replace(/\.pug$/, '.html');
-                    }
-                }
-                else {
-                    // 如果未设置输出路径，回退到默认行为
-                    finalOutputPath = filePath.replace(/\.pug$/, '.html');
-                }
-                break;
-            default:
-                // 默认行为
-                finalOutputPath = filePath.replace(/\.pug$/, '.html');
-        }
-        // 确保输出文件的目录存在
-        const outputDir = path.dirname(finalOutputPath);
-        if (!fs.existsSync(outputDir)) {
-            fs.mkdirSync(outputDir, { recursive: true });
-        }
-        // 写入文件
-        fs.writeFileSync(finalOutputPath, html);
-        vscode.window.showInformationMessage(`已成功编译 ${path.basename(filePath)} 到 ${finalOutputPath}`);
-    }
-    catch (error) {
-        vscode.window.showErrorMessage(`编译失败: ${error instanceof Error ? error.message : String(error)}`);
-    }
-}
+/**
+ * 扩展被停用时调用
+ */
 function deactivate() { }
 exports.deactivate = deactivate;
 //# sourceMappingURL=extension.js.map

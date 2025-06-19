@@ -15,9 +15,10 @@
   },
   "engines": {
     "vscode": "^1.74.0"
-  },  "activationEvents": [
-    "onLanguage:pug",
-    "onCommand:pug-compile.format"
+  },
+  "activationEvents": [
+    "workspaceContains:**/*.pug",
+    "workspaceContains:**/*.jade"
   ],
   "categories": [
     "Programming Languages"
@@ -37,7 +38,8 @@
         ],
         "configuration": "./languages/lang.json"
       }
-    ],    "commands": [
+    ],
+    "commands": [
       {
         "command": "pug-compile.compile",
         "title": "Pug Compile：将Pug编译为HTML",
@@ -66,7 +68,8 @@
           "source.ts": "typescript"
         }
       }
-    ],    "keybindings": [
+    ],
+    "keybindings": [
       {
         "command": "pug-compile.compile",
         "key": "ctrl+alt+c",
@@ -123,7 +126,8 @@
           "type": "boolean",
           "default": true,
           "description": "保存时自动编译Pug文件"
-        },        "pug-compile.format.enable": {
+        },
+        "pug-compile.format.enable": {
           "type": "boolean",
           "default": true,
           "description": "启用Pug文件格式化"

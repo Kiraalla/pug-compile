@@ -39,6 +39,11 @@ VSCode扩展，用于将Pug文件编译为HTML
   - 默认值: `false`
   - 说明: 启用后，保存Pug文件时会自动编译为HTML
 
+- `pug-compile.ignoreUnderscore`: 忽略下划线开头的Pug文件
+  - 类型: `boolean`
+  - 默认值: `true`
+  - 说明: 启用后，保存时下划线开头（如`_partial.pug`）的Pug文件不会被自动编译
+
 - `pug-compile.outputPath`: 自定义输出目录
   - 类型: `string`
   - 默认值: `""`

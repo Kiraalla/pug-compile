@@ -77,7 +77,14 @@ export async function activate(context: vscode.ExtensionContext) {
             if (document.languageId === 'pug') {
                 outputChannel.appendLine('Pug file saved');
                 const config = vscode.workspace.getConfiguration('pug-compile');
-                if (config.get('autoCompile')) {
+                const autoCompile = config.get('autoCompile');
+                const ignoreUnderscore = config.get('ignoreUnderscore');
+                const fileName = document.uri.fsPath.split(/[/\\]/).pop() || '';
+                if (autoCompile) {
+                    if (ignoreUnderscore && fileName.startsWith('_')) {
+                        outputChannel.appendLine('Ignored pug file (starts with underscore): ' + fileName);
+                        return;
+                    }
                     PugCompiler.compile(document.uri.fsPath);
                 }
             }

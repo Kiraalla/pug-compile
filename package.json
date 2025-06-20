@@ -158,6 +158,11 @@
           ],
           "default": 2,
           "description": "当 fillTab 为 false 时，使用的空格数量"
+        },
+        "pug-compile.ignoreUnderscore": {
+          "type": "boolean",
+          "default": true,
+          "description": "忽略下划线开头的 Pug 文件（如 _partial.pug）不自动编译"
         }
       }
     }

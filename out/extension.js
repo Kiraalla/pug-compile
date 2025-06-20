@@ -43,7 +43,6 @@ let outputChannel;
 function activate(context) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        console.log('Activating Pug Compile extension...');
         // 创建输出通道
         outputChannel = vscode.window.createOutputChannel('Pug Compile');
         outputChannel.appendLine('Pug Compile extension is being activated...');
@@ -109,7 +108,14 @@ function activate(context) {
                 if (document.languageId === 'pug') {
                     outputChannel.appendLine('Pug file saved');
                     const config = vscode.workspace.getConfiguration('pug-compile');
-                    if (config.get('autoCompile')) {
+                    const autoCompile = config.get('autoCompile');
+                    const ignoreUnderscore = config.get('ignoreUnderscore');
+                    const fileName = document.uri.fsPath.split(/[/\\]/).pop() || '';
+                    if (autoCompile) {
+                        if (ignoreUnderscore && fileName.startsWith('_')) {
+                            outputChannel.appendLine('Ignored pug file (starts with underscore): ' + fileName);
+                            return;
+                        }
                         compiler_1.PugCompiler.compile(document.uri.fsPath);
                     }
                 }

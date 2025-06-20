@@ -17,8 +17,7 @@
     "vscode": "^1.74.0"
   },
   "activationEvents": [
-    "workspaceContains:**/*.pug",
-    "workspaceContains:**/*.jade"
+    "onLanguage:pug"
   ],
   "categories": [
     "Programming Languages"
@@ -36,13 +35,20 @@
           ".pug",
           ".jade"
         ],
-        "configuration": "./languages/lang.json"
+        "configuration": "./languages/lang.json",
+        "filenamePatterns": [],
+        "firstLine": "^(doctype|html)",
+        "mimetypes": [
+          "text/x-pug",
+          "text/pug"
+        ]
       }
     ],
     "commands": [
       {
         "command": "pug-compile.compile",
         "title": "Pug Compile：将Pug编译为HTML",
+        "category": "Pug Compile",
         "icon": {
           "light": "./icon.png",
           "dark": "./icon.png"
@@ -51,11 +57,11 @@
       {
         "command": "pug-compile.format",
         "title": "Pug：格式化文件",
-        "category": "Pug"
+        "category": "Pug Compile"
       }
     ],
     "capabilities": {
-      "documentFormattingProvider": "true"
+      "documentFormattingProvider": true
     },
     "grammars": [
       {
@@ -167,7 +173,7 @@
   "devDependencies": {
     "@types/node": "^16.11.7",
     "@types/pug": "^2.0.10",
-    "@types/vscode": "^1.74.0",
+    "@types/vscode": "^1.6.0",
     "@typescript-eslint/eslint-plugin": "^5.16.0",
     "@typescript-eslint/parser": "^5.16.0",
     "eslint": "^8.9.0",

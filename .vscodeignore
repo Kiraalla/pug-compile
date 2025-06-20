@@ -8,9 +8,6 @@ test/**
 tsconfig.json
 .eslintrc.json
 webpack.config.js
-node_modules/**
-!node_modules/pug/**
-!node_modules/pug-beautify/**
 **/*.map
 **/*.ts
 *.vsix
